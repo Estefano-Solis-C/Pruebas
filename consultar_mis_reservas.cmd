@@ -1,0 +1,1 @@
+curl -X GET "http://localhost:8080/api/v1/bookings/my-bookings" -H "Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnF1aWxpbm8tY3VybEB0ZXN0LmNvbSIsImlhdCI6MTc2Mjk4NjUwOSwiZXhwIjoxNzYzNTkxMzA5fQ.DEpJgste41PNRm1G5TCs88WyAlbh25VgZgFMpNpabsPadrznFBI0-qWsxKmW1lWcywelF3HHxiQKfhtlcYPIcw"

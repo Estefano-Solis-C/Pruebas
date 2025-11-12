@@ -22,4 +22,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @param renterId The ID of the renter (Arrendatario).
      */
     List<Review> findByRenterId(Long renterId);
+
+    // Prevent duplicate review per renter per vehicle
+    boolean existsByVehicleIdAndRenterId(Long vehicleId, Long renterId);
 }

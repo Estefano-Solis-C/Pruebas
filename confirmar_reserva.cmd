@@ -1,0 +1,1 @@
+curl -X PUT "http://localhost:8080/api/v1/bookings/1/confirm" -H "Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcm9waWV0YXJpby1jdXJsQHRlc3QuY29tIiwiaWF0IjoxNzYyOTg2NTA0LCJleHAiOjE3NjM1OTEzMDR9.RHmqy7kl9vGkGoPtJDk_q930jsGzd7y2w8IZKfQ9xxzXdrsw8CaW1HILJwUxQa3LpfD4e7wnRWi7IBlhOPggJg"

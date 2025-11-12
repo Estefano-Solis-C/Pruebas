@@ -2,6 +2,7 @@ package com.codexateam.platform.booking.interfaces.acl;
 
 import com.codexateam.platform.booking.domain.model.aggregates.Booking;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingByVehicleIdAndDateQuery;
+import com.codexateam.platform.booking.domain.model.queries.GetBookingsByRenterIdQuery;
 import com.codexateam.platform.booking.domain.services.BookingQueryService;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +26,19 @@ public class BookingContextFacade {
         var booking = bookingQueryService.handle(query); // Asume que este handle devuelve Optional<Booking>
         return booking.map(Booking::getId);
     }
-}
 
+    /**
+     * Verifica si un renter tiene al menos una reserva COMPLETADA (endDate en el pasado) para el vehículo indicado.
+     * Consideramos COMPLETADA si status = CONFIRMED y endDate < now.
+     */
+    public boolean hasCompletedBooking(Long renterId, Long vehicleId) {
+        var bookings = bookingQueryService.handle(new GetBookingsByRenterIdQuery(renterId));
+        Date now = new Date();
+        return bookings.stream().anyMatch(b ->
+                b.getVehicleId().equals(vehicleId)
+                        && "CONFIRMED".equalsIgnoreCase(b.getStatus())
+                        && b.getEndDate() != null
+                        && b.getEndDate().before(now)
+        );
+    }
+}

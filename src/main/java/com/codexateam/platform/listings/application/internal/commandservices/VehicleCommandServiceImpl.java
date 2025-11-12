@@ -6,6 +6,9 @@ import com.codexateam.platform.listings.domain.services.VehicleCommandService;
 import com.codexateam.platform.listings.infrastructure.persistence.jpa.repositories.VehicleRepository;
 // TODO: Inject an IAM ACL (Anti-Corruption Layer) facade to validate ownerId
 // import com.codexateam.platform.iam.interfaces.acl.IamContextFacade;
+import com.codexateam.platform.iam.domain.model.queries.GetUserByIdQuery;
+import com.codexateam.platform.iam.domain.model.valueobjects.Roles;
+import com.codexateam.platform.iam.domain.services.UserQueryService;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,19 +17,24 @@ import java.util.Optional;
 public class VehicleCommandServiceImpl implements VehicleCommandService {
 
     private final VehicleRepository vehicleRepository;
+    private final UserQueryService userQueryService;
     // private final IamContextFacade iamContextFacade;
 
-    public VehicleCommandServiceImpl(VehicleRepository vehicleRepository) {
+    public VehicleCommandServiceImpl(VehicleRepository vehicleRepository, UserQueryService userQueryService) {
         this.vehicleRepository = vehicleRepository;
+        this.userQueryService = userQueryService;
     }
 
     @Override
     public Optional<Vehicle> handle(CreateVehicleCommand command) {
-        // TODO: Validate ownerId using ACL
-        // if (!iamContextFacade.existsUserByIdAndRole(command.ownerId(), Roles.ROLE_ARRENDADOR)) {
-        //    throw new IllegalArgumentException("Owner does not exist or is not an ARRENDADOR");
-        // }
-        
+        // Validate ownerId using IAM query service (defense in depth)
+        var user = userQueryService.handle(new GetUserByIdQuery(command.ownerId()))
+                .orElseThrow(() -> new IllegalArgumentException("Owner no existe"));
+        boolean isArrendador = user.getRoles().stream().anyMatch(r -> r.getName() == Roles.ROLE_ARRENDADOR);
+        if (!isArrendador) {
+            throw new IllegalArgumentException("Owner no tiene el rol requerido (ROLE_ARRENDADOR)");
+        }
+
         var vehicle = new Vehicle(command);
         try {
             vehicleRepository.save(vehicle);

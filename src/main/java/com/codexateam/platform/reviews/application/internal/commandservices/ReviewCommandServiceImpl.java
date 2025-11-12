@@ -4,7 +4,7 @@ import com.codexateam.platform.reviews.domain.model.aggregates.Review;
 import com.codexateam.platform.reviews.domain.model.commands.CreateReviewCommand;
 import com.codexateam.platform.reviews.domain.services.ReviewCommandService;
 import com.codexateam.platform.reviews.infrastructure.persistence.jpa.repositories.ReviewRepository;
-// TODO: Inject ACL facades for IAM and Booking
+import com.codexateam.platform.booking.interfaces.acl.BookingContextFacade; // ACL
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,10 +16,11 @@ import java.util.Optional;
 public class ReviewCommandServiceImpl implements ReviewCommandService {
 
     private final ReviewRepository reviewRepository;
-    // private final ExternalBookingService externalBookingService; // ACL
+    private final BookingContextFacade bookingContextFacade; // ACL
 
-    public ReviewCommandServiceImpl(ReviewRepository reviewRepository) {
+    public ReviewCommandServiceImpl(ReviewRepository reviewRepository, BookingContextFacade bookingContextFacade) {
         this.reviewRepository = reviewRepository;
+        this.bookingContextFacade = bookingContextFacade;
     }
 
     /**
@@ -31,11 +32,16 @@ public class ReviewCommandServiceImpl implements ReviewCommandService {
      */
     @Override
     public Optional<Review> handle(CreateReviewCommand command) {
-        // boolean hasCompletedBooking = externalBookingService
-        //        .hasCompletedBooking(command.renterId(), command.vehicleId());
-        // if (!hasCompletedBooking) {
-        //    throw new IllegalArgumentException("User must have a completed booking to review this vehicle.");
-        // }
+        // 2. Validate completed booking exists
+        boolean hasCompletedBooking = bookingContextFacade.hasCompletedBooking(command.renterId(), command.vehicleId());
+        if (!hasCompletedBooking) {
+            throw new IllegalArgumentException("Solo puedes dejar reseñas de reservas que ya has completado");
+        }
+
+        // 3. Prevent duplicate reviews per renter per vehicle
+        if (reviewRepository.existsByVehicleIdAndRenterId(command.vehicleId(), command.renterId())) {
+            throw new IllegalArgumentException("Ya has dejado una reseña para este vehículo");
+        }
 
         var review = new Review(command);
         try {

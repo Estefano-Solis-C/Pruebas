@@ -53,7 +53,7 @@ public class User extends AuditableAbstractAggregateRoot<User> {
      * A set of roles assigned to the user.
      * Based on 'role' from db.json.
      */
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))

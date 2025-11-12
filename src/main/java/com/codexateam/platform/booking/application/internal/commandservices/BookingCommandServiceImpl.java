@@ -10,7 +10,6 @@ import com.codexateam.platform.booking.infrastructure.persistence.jpa.repositori
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of BookingCommandService.
@@ -96,18 +95,15 @@ public class BookingCommandServiceImpl implements BookingCommandService {
             );
         }
 
-        // (Future Enhancement) Validate no overlapping bookings
-        // This would require a repository method like:
-        // boolean hasOverlap = bookingRepository.existsOverlappingBooking(
-        //     command.vehicleId(),
-        //     command.startDate(),
-        //     command.endDate()
-        // );
-        // if (hasOverlap) {
-        //     throw new IllegalArgumentException(
-        //         "Vehicle is not available for the selected dates."
-        //     );
-        // }
+        // Validate no overlapping bookings (PENDING or CONFIRMED)
+        boolean hasOverlap = bookingRepository.existsOverlappingBooking(
+            command.vehicleId(),
+            command.startDate(),
+            command.endDate()
+        );
+        if (hasOverlap) {
+            throw new IllegalArgumentException("El vehículo no está disponible para las fechas seleccionadas");
+        }
     }
 
     /**
@@ -116,7 +112,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
      */
     private Double calculateTotalPrice(Double pricePerDay, java.util.Date startDate, java.util.Date endDate) {
         long diffInMillis = Math.abs(endDate.getTime() - startDate.getTime());
-        long days = TimeUnit.DAYS.convert(diffInMillis, TimeUnit.MILLISECONDS);
+        long days = java.util.concurrent.TimeUnit.DAYS.convert(diffInMillis, java.util.concurrent.TimeUnit.MILLISECONDS);
 
         // Ensure minimum 1 day rental
         if (days == 0) {
