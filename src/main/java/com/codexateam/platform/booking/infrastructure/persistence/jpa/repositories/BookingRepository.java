@@ -1,0 +1,29 @@
+package com.codexateam.platform.booking.infrastructure.persistence.jpa.repositories;
+
+import com.codexateam.platform.booking.domain.model.aggregates.Booking;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+/**
+ * JPA Repository interface for the Booking aggregate root.
+ */
+@Repository
+public interface BookingRepository extends JpaRepository<Booking, Long> {
+    /**
+     * Finds all bookings made by a specific renter.
+     * @param renterId The ID of the renter (Arrendatario).
+     */
+    List<Booking> findByRenterId(Long renterId);
+    
+    /**
+     * Finds all bookings associated with a specific owner's vehicles.
+     * @param ownerId The ID of the owner (Arrendador).
+     */
+    List<Booking> findByOwnerId(Long ownerId);
+
+    // TODO: Add query for checking overlapping bookings
+    // @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM Booking b WHERE b.vehicleId = :vehicleId AND b.status = 'CONFIRMED' AND b.startDate < :endDate AND b.endDate > :startDate")
+    // boolean existsOverlappingBooking(Long vehicleId, Date startDate, Date endDate);
+}

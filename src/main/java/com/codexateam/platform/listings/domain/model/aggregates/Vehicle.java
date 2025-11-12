@@ -1,0 +1,65 @@
+package com.codexateam.platform.listings.domain.model.aggregates;
+
+import com.codexateam.platform.listings.domain.model.commands.CreateVehicleCommand;
+import com.codexateam.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * Represents the Vehicle aggregate root in the Listings bounded context.
+ * Based on the 'vehicles' table in db.json.
+ */
+@NoArgsConstructor
+@Getter
+@Entity
+@Table(name = "vehicles") // Matches 'db.json'
+public class Vehicle extends AuditableAbstractAggregateRoot<Vehicle> {
+
+    @Column(nullable = false)
+    private String brand;
+
+    @Column(nullable = false)
+    private String model;
+
+    @Column(nullable = false)
+    private Integer year;
+
+    @Column(nullable = false)
+    private Double pricePerDay;
+
+    /**
+     * The rental status of the vehicle (e.g., "available", "rented").
+     */
+    @Column(nullable = false)
+    private String status;
+
+    @Column(length = 1000)
+    private String imageUrl;
+
+    /**
+     * Foreign key to the User (Arrendador) who owns this vehicle.
+     */
+    @Column(nullable = false)
+    private Long ownerId;
+
+    public Vehicle(CreateVehicleCommand command) {
+        this.brand = command.brand();
+        this.model = command.model();
+        this.year = command.year();
+        this.pricePerDay = command.pricePerDay();
+        this.status = "available"; // Default status on creation
+        this.imageUrl = command.imageUrl();
+        this.ownerId = command.ownerId();
+    }
+    
+    /**
+     * Updates the status of the vehicle.
+     * @param newStatus The new status (e.g., "rented").
+     */
+    public void updateStatus(String newStatus) {
+        this.status = newStatus;
+    }
+}
