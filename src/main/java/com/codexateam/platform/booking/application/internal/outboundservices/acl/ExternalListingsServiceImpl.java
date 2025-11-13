@@ -36,4 +36,9 @@ public class ExternalListingsServiceImpl implements ExternalListingsService {
     public Optional<Double> getVehiclePriceById(Long vehicleId) {
         return listingsContextFacade.getVehiclePriceById(vehicleId);
     }
+
+    @Override
+    public void updateVehicleStatus(Long vehicleId, String status) {
+        listingsContextFacade.updateVehicleStatus(vehicleId, status);
+    }
 }

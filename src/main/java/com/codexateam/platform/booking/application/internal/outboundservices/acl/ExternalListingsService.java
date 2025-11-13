@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface ExternalListingsService {
     Optional<VehicleResource> fetchVehicleById(Long vehicleId);
     Optional<Double> getVehiclePriceById(Long vehicleId);
+    void updateVehicleStatus(Long vehicleId, String status);
 }

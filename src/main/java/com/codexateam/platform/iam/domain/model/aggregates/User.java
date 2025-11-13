@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +30,7 @@ public class User extends AuditableAbstractAggregateRoot<User> {
      */
     @NotBlank
     @Size(max = 100)
+    @Setter
     private String name;
     
     /**
@@ -39,6 +41,7 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @Size(max = 50)
     @Email
     @Column(unique = true)
+    @Setter
     private String email;
 
     /**
@@ -47,6 +50,7 @@ public class User extends AuditableAbstractAggregateRoot<User> {
      */
     @NotBlank
     @Size(max = 120)
+    @Setter
     private String password;
 
     /**

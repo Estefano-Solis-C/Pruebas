@@ -2,6 +2,7 @@ package com.codexateam.platform.booking.application.internal.commandservices;
 
 import com.codexateam.platform.booking.application.internal.outboundservices.acl.ExternalListingsService;
 import com.codexateam.platform.booking.domain.model.aggregates.Booking;
+import com.codexateam.platform.booking.domain.model.commands.CancelBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.ConfirmBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.CreateBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.RejectBookingCommand;
@@ -57,9 +58,8 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         try {
             bookingRepository.save(booking);
             
-            // 5. (Future Enhancement) Notify Listings context to update vehicle status
-            // This would mark the vehicle as "RESERVED" or "RENTED" during the booking period
-            // externalListingsService.updateVehicleStatus(command.vehicleId(), BookingStatus.CONFIRMED);
+            // 5. Update vehicle status to PENDING via ACL
+            externalListingsService.updateVehicleStatus(booking.getVehicleId(), "PENDING");
 
             return Optional.of(booking);
         } catch (Exception e) {
@@ -148,6 +148,10 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 
         try {
             bookingRepository.save(bookingToConfirm);
+
+            // Update vehicle status to RENTED via ACL
+            externalListingsService.updateVehicleStatus(bookingToConfirm.getVehicleId(), "RENTED");
+
             return Optional.of(bookingToConfirm);
         } catch (Exception e) {
             System.err.println("Error confirming booking: " + e.getMessage());
@@ -181,9 +185,58 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 
         try {
             bookingRepository.save(bookingToReject);
+
+            // Update vehicle status back to available via ACL
+            externalListingsService.updateVehicleStatus(bookingToReject.getVehicleId(), "available");
+
             return Optional.of(bookingToReject);
         } catch (Exception e) {
             System.err.println("Error rejecting booking: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Handles the CancelBookingCommand.
+     * Cancels a booking by changing its status to CANCELED.
+     * Only the renter who created the booking can cancel it.
+     */
+    @Override
+    public Optional<Booking> handle(CancelBookingCommand command) {
+        var booking = bookingRepository.findById(command.bookingId());
+
+        if (booking.isEmpty()) {
+            throw new IllegalArgumentException("Booking with ID " + command.bookingId() + " not found.");
+        }
+
+        var bookingToCancel = booking.get();
+
+        // Validate that the booking belongs to the renter
+        if (!bookingToCancel.getRenterId().equals(command.renterId())) {
+            throw new SecurityException(
+                "You are not authorized to cancel this booking. Booking belongs to another user."
+            );
+        }
+
+        // Validate that the booking is in PENDING or CONFIRMED status
+        if (!"PENDING".equals(bookingToCancel.getStatus()) && !"CONFIRMED".equals(bookingToCancel.getStatus())) {
+            throw new IllegalArgumentException(
+                "Only bookings with PENDING or CONFIRMED status can be canceled. Current status: " + bookingToCancel.getStatus()
+            );
+        }
+
+        // Cancel the booking
+        bookingToCancel.cancel();
+
+        try {
+            bookingRepository.save(bookingToCancel);
+
+            // Update vehicle status back to available via ACL
+            externalListingsService.updateVehicleStatus(bookingToCancel.getVehicleId(), "available");
+
+            return Optional.of(bookingToCancel);
+        } catch (Exception e) {
+            System.err.println("Error canceling booking: " + e.getMessage());
             return Optional.empty();
         }
     }

@@ -1,10 +1,12 @@
 package com.codexateam.platform.booking.interfaces.rest;
 
 import com.codexateam.platform.booking.application.internal.outboundservices.acl.ExternalListingsService;
+import com.codexateam.platform.booking.domain.model.commands.CancelBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.ConfirmBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.RejectBookingCommand;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingsByOwnerIdQuery;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingsByRenterIdQuery;
+import com.codexateam.platform.booking.domain.model.queries.GetBookingByIdQuery;
 import com.codexateam.platform.booking.domain.services.BookingCommandService;
 import com.codexateam.platform.booking.domain.services.BookingQueryService;
 import com.codexateam.platform.booking.interfaces.rest.resources.BookingResource;
@@ -171,6 +173,41 @@ public class BookingsController {
         var booking = bookingCommandService.handle(command)
                 .orElseThrow(() -> new RuntimeException("Error rejecting booking."));
 
+        var resource = BookingResourceFromEntityAssembler.toResourceFromEntity(booking);
+        return ResponseEntity.ok(resource);
+    }
+
+    /**
+     * Cancels a booking.
+     * Only the renter (ARRENDATARIO) who created the booking can cancel it.
+     *
+     * @param bookingId The ID of the booking to cancel.
+     * @return The canceled booking resource.
+     */
+    @PutMapping("/{bookingId}/cancel")
+    @PreAuthorize("hasRole('ROLE_ARRENDATARIO')")
+    public ResponseEntity<BookingResource> cancelBooking(@PathVariable Long bookingId) {
+        Long renterId = getAuthenticatedUserId();
+
+        var command = new CancelBookingCommand(bookingId, renterId);
+        var booking = bookingCommandService.handle(command)
+                .orElseThrow(() -> new RuntimeException("Error canceling booking."));
+
+        var resource = BookingResourceFromEntityAssembler.toResourceFromEntity(booking);
+        return ResponseEntity.ok(resource);
+    }
+
+    /**
+     * Gets a booking by its ID.
+     *
+     * @param bookingId The ID of the booking to retrieve.
+     * @return The booking resource.
+     */
+    @GetMapping("/{bookingId}")
+    @PreAuthorize("hasRole('ROLE_ARRENDADOR') or hasRole('ROLE_ARRENDATARIO')")
+    public ResponseEntity<BookingResource> getBookingById(@PathVariable Long bookingId) {
+        var booking = bookingQueryService.handle(new GetBookingByIdQuery(bookingId))
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
         var resource = BookingResourceFromEntityAssembler.toResourceFromEntity(booking);
         return ResponseEntity.ok(resource);
     }

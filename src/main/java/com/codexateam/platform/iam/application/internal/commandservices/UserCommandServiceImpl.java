@@ -4,15 +4,18 @@ import com.codexateam.platform.iam.application.internal.outboundservices.hashing
 import com.codexateam.platform.iam.domain.model.aggregates.User;
 import com.codexateam.platform.iam.domain.model.commands.SignInCommand;
 import com.codexateam.platform.iam.domain.model.commands.SignUpCommand;
+import com.codexateam.platform.iam.domain.model.commands.UpdatePasswordCommand;
+import com.codexateam.platform.iam.domain.model.commands.UpdateUserCommand;
 import com.codexateam.platform.iam.domain.services.UserCommandService;
 import com.codexateam.platform.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 /**
  * Implementation of UserCommandService.
- * Handles the logic for user sign-up and sign-in.
+ * Handles the logic for user sign-up, sign-in, and updates.
  */
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
@@ -52,5 +55,44 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("Invalid password");
         }
         return user;
+    }
+
+    /**
+     * Handles updating user profile (name, email)
+     */
+    @Override
+    @Transactional
+    public Optional<User> handle(UpdateUserCommand command) {
+        var userOpt = userRepository.findById(command.userId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        var user = userOpt.get();
+        if (command.name() != null && !command.name().isBlank()) user.setName(command.name());
+        if (command.email() != null && !command.email().isBlank()) user.setEmail(command.email());
+        userRepository.save(user);
+        return Optional.of(user);
+    }
+
+    /**
+     * Handles updating user password (verify current, then hash new password)
+     */
+    @Override
+    @Transactional
+    public Optional<User> handle(UpdatePasswordCommand command) {
+        var userOpt = userRepository.findById(command.userId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        var user = userOpt.get();
+        if (command.newPassword() == null || command.newPassword().isBlank()) {
+            throw new IllegalArgumentException("New password cannot be empty");
+        }
+        if (command.currentPassword() == null || !hashingService.matches(command.currentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        user.setPassword(hashingService.encode(command.newPassword()));
+        userRepository.save(user);
+        return Optional.of(user);
     }
 }

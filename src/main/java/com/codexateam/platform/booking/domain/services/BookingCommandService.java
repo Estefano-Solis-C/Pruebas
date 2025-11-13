@@ -1,6 +1,7 @@
 package com.codexateam.platform.booking.domain.services;
 
 import com.codexateam.platform.booking.domain.model.aggregates.Booking;
+import com.codexateam.platform.booking.domain.model.commands.CancelBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.ConfirmBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.CreateBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.RejectBookingCommand;
@@ -31,6 +32,13 @@ public interface BookingCommandService {
      * @return An Optional containing the rejected Booking aggregate.
      */
     Optional<Booking> handle(RejectBookingCommand command);
+
+    /**
+     * Handles the CancelBookingCommand.
+     * @param command The command to cancel a booking.
+     * @return An Optional containing the canceled Booking aggregate.
+     */
+    Optional<Booking> handle(CancelBookingCommand command);
 }
 
 

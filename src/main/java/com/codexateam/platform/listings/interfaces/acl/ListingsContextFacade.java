@@ -7,13 +7,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import com.codexateam.platform.listings.domain.model.commands.UpdateVehicleStatusCommand;
+import com.codexateam.platform.listings.domain.services.VehicleCommandService;
+
 @Service
 public class ListingsContextFacade {
 
     private final VehicleQueryService vehicleQueryService;
+    private final VehicleCommandService vehicleCommandService;
 
-    public ListingsContextFacade(VehicleQueryService vehicleQueryService) {
+    public ListingsContextFacade(VehicleQueryService vehicleQueryService, VehicleCommandService vehicleCommandService) {
         this.vehicleQueryService = vehicleQueryService;
+        this.vehicleCommandService = vehicleCommandService;
     }
 
     /**
@@ -33,5 +38,13 @@ public class ListingsContextFacade {
         var query = new GetVehicleByIdQuery(vehicleId);
         var vehicle = vehicleQueryService.handle(query);
         return vehicle.map(Vehicle::getPricePerDay);
+    }
+
+    /**
+     * Usado por 'booking' para actualizar el estado de un vehículo.
+     */
+    public Optional<Vehicle> updateVehicleStatus(Long vehicleId, String status) {
+        var command = new UpdateVehicleStatusCommand(vehicleId, status);
+        return vehicleCommandService.handle(command);
     }
 }

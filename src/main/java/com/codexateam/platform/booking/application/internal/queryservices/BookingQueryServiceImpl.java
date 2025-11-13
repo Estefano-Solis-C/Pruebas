@@ -4,6 +4,7 @@ import com.codexateam.platform.booking.domain.model.aggregates.Booking;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingsByOwnerIdQuery;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingsByRenterIdQuery;
 import com.codexateam.platform.booking.domain.model.queries.GetBookingByVehicleIdAndDateQuery;
+import com.codexateam.platform.booking.domain.model.queries.GetBookingByIdQuery;
 import com.codexateam.platform.booking.domain.services.BookingQueryService;
 import com.codexateam.platform.booking.infrastructure.persistence.jpa.repositories.BookingRepository;
 import org.springframework.stereotype.Service;
@@ -38,5 +39,10 @@ public class BookingQueryServiceImpl implements BookingQueryService {
     public Optional<Booking> handle(GetBookingByVehicleIdAndDateQuery query) {
         Date t = query.timestamp();
         return bookingRepository.findFirstByVehicleIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(query.vehicleId(), t, t);
+    }
+
+    @Override
+    public Optional<Booking> handle(GetBookingByIdQuery query) {
+        return bookingRepository.findById(query.bookingId());
     }
 }

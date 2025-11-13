@@ -1,15 +1,13 @@
 package com.codexateam.platform.iam.domain.services;
 
-import com.codexateam.platform.iam.domain.model.aggregates.User;
-import com.codexateam.platform.iam.domain.model.queries.GetUserByEmailQuery;
-import com.codexateam.platform.iam.domain.model.queries.GetUserByIdQuery;
-
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Service interface for handling User queries.
- */
+import com.codexateam.platform.iam.domain.model.aggregates.User;
+import com.codexateam.platform.iam.domain.model.queries.GetAllUsersQuery;
+import com.codexateam.platform.iam.domain.model.queries.GetUserByIdQuery;
+
 public interface UserQueryService {
+    List<User> handle(GetAllUsersQuery query);
     Optional<User> handle(GetUserByIdQuery query);
-    Optional<User> handle(GetUserByEmailQuery query);
 }
