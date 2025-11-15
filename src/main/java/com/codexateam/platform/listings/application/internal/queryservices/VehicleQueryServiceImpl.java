@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementation of VehicleQueryService.
+ * Handles queries for retrieving vehicle listings.
+ */
 @Service
 public class VehicleQueryServiceImpl implements VehicleQueryService {
 

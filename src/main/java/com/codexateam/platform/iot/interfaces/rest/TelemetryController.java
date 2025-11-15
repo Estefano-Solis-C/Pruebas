@@ -11,6 +11,9 @@ import com.codexateam.platform.iot.interfaces.rest.resources.TelemetryResource;
 import com.codexateam.platform.iot.interfaces.rest.transform.RecordTelemetryCommandFromResourceAssembler;
 import com.codexateam.platform.iot.interfaces.rest.transform.TelemetryResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,6 +69,12 @@ public class TelemetryController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ARRENDADOR')")
+    @Operation(summary = "Record Telemetry", description = "Record a new telemetry data point for a vehicle (Owner only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Telemetry recorded"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden, not vehicle owner")
+    })
     public ResponseEntity<TelemetryResource> recordTelemetry(@RequestBody RecordTelemetryResource resource) {
         Long ownerId = getAuthenticatedUserId();
 
@@ -91,13 +100,19 @@ public class TelemetryController {
      */
     @GetMapping("/vehicle/{vehicleId}")
     @PreAuthorize("hasRole('ROLE_ARRENDADOR') or hasRole('ROLE_ARRENDATARIO')")
+    @Operation(summary = "Get Telemetry by Vehicle", description = "Get all telemetry data for a specific vehicle (Owner or active Renter only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Telemetry found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden, no permission")
+    })
     public ResponseEntity<List<TelemetryResource>> getTelemetryByVehicleId(@PathVariable Long vehicleId) {
         Long userId = getAuthenticatedUserId();
 
         // Validate that the authenticated user has permission to view this vehicle's tracking
         // User must be either:
-        // 1. The owner of the vehicle (ARRENDADOR), OR
-        // 2. A renter with an active booking for this vehicle (ARRENDATARIO)
+        // 1. The owner of the vehicle, OR
+        // 2. A renter with an active booking for this vehicle
         boolean isOwner = externalListingsService.isVehicleOwner(vehicleId, userId);
         boolean hasActiveBooking = externalBookingService.hasTrackingPermission(userId, vehicleId);
 

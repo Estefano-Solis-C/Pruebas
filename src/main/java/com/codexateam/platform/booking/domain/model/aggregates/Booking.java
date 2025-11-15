@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 
@@ -46,12 +47,14 @@ public class Booking extends AuditableAbstractAggregateRoot<Booking> {
     /**
      * Renamed from 'fechaFin' in db.json.
      */
+    @Setter
     @Column(nullable = false)
     private Date endDate;
 
     /**
      * Renamed from 'precioTotal' in db.json.
      */
+    @Setter
     @Column(nullable = false)
     private Double totalPrice;
 

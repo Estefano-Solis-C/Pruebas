@@ -1,8 +1,14 @@
 package com.codexateam.platform.listings.interfaces.rest.resources;
 
 /**
- * DTO for creating a new vehicle.
- * 'ownerId' will be taken from the authenticated token, not this resource.
+ * DTO for creating a new vehicle listing.
+ * The owner ID is automatically extracted from the authenticated user's JWT token.
+ *
+ * @param brand The vehicle's brand/manufacturer.
+ * @param model The vehicle's model name.
+ * @param year The vehicle's manufacturing year.
+ * @param pricePerDay The daily rental price.
+ * @param imageUrl URL of the vehicle's image.
  */
 public record CreateVehicleResource(
         String brand,

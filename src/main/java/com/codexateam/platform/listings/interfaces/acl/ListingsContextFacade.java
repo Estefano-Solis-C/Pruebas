@@ -22,7 +22,11 @@ public class ListingsContextFacade {
     }
 
     /**
-     * Usado por 'iot' para verificar si un vehículo existe.
+     * Checks if a vehicle exists by its ID.
+     * Used by the IoT bounded context to validate vehicle existence.
+     *
+     * @param vehicleId The ID of the vehicle to check.
+     * @return true if the vehicle exists, false otherwise.
      */
     @SuppressWarnings("unused")
     public boolean existsVehicleById(Long vehicleId) {
@@ -31,8 +35,11 @@ public class ListingsContextFacade {
     }
 
     /**
-     * Usado por 'booking' para obtener el precio de un vehículo.
-     * Devuelve el precio por día (pricePerDay).
+     * Retrieves the daily rental price for a specific vehicle.
+     * Used by the Booking bounded context to calculate total booking costs.
+     *
+     * @param vehicleId The ID of the vehicle.
+     * @return An Optional containing the price per day if the vehicle exists.
      */
     public Optional<Double> getVehiclePriceById(Long vehicleId) {
         var query = new GetVehicleByIdQuery(vehicleId);
@@ -41,7 +48,12 @@ public class ListingsContextFacade {
     }
 
     /**
-     * Usado por 'booking' para actualizar el estado de un vehículo.
+     * Updates the status of a vehicle.
+     * Used by the Booking bounded context to change vehicle availability (e.g., "available", "rented").
+     *
+     * @param vehicleId The ID of the vehicle to update.
+     * @param status The new status value.
+     * @return An Optional containing the updated Vehicle aggregate if successful.
      */
     public Optional<Vehicle> updateVehicleStatus(Long vehicleId, String status) {
         var command = new UpdateVehicleStatusCommand(vehicleId, status);

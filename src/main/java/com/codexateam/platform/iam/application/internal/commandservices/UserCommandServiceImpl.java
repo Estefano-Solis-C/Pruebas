@@ -6,6 +6,7 @@ import com.codexateam.platform.iam.domain.model.commands.SignInCommand;
 import com.codexateam.platform.iam.domain.model.commands.SignUpCommand;
 import com.codexateam.platform.iam.domain.model.commands.UpdatePasswordCommand;
 import com.codexateam.platform.iam.domain.model.commands.UpdateUserCommand;
+import com.codexateam.platform.iam.domain.model.commands.DeleteUserCommand;
 import com.codexateam.platform.iam.domain.services.UserCommandService;
 import com.codexateam.platform.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -94,5 +95,17 @@ public class UserCommandServiceImpl implements UserCommandService {
         user.setPassword(hashingService.encode(command.newPassword()));
         userRepository.save(user);
         return Optional.of(user);
+    }
+
+    /**
+     * Handles deleting a user.
+     */
+    @Override
+    @Transactional
+    public void handle(DeleteUserCommand command) {
+        if (!userRepository.existsById(command.userId())) {
+            throw new IllegalArgumentException("User not found");
+        }
+        userRepository.deleteById(command.userId());
     }
 }

@@ -6,6 +6,8 @@ import com.codexateam.platform.booking.domain.model.commands.CancelBookingComman
 import com.codexateam.platform.booking.domain.model.commands.ConfirmBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.CreateBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.RejectBookingCommand;
+import com.codexateam.platform.booking.domain.model.commands.DeleteBookingCommand;
+import com.codexateam.platform.booking.domain.model.commands.UpdateBookingCommand;
 import com.codexateam.platform.booking.domain.services.BookingCommandService;
 import com.codexateam.platform.booking.infrastructure.persistence.jpa.repositories.BookingRepository;
 import org.springframework.stereotype.Service;
@@ -57,10 +59,6 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         var booking = new Booking(command, totalPrice);
         try {
             bookingRepository.save(booking);
-            
-            // 5. Update vehicle status to PENDING via ACL
-            externalListingsService.updateVehicleStatus(booking.getVehicleId(), "PENDING");
-
             return Optional.of(booking);
         } catch (Exception e) {
             // Log error details for debugging
@@ -102,7 +100,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
             command.endDate()
         );
         if (hasOverlap) {
-            throw new IllegalArgumentException("El vehículo no está disponible para las fechas seleccionadas");
+            throw new IllegalArgumentException("The vehicle is not available for the selected dates");
         }
     }
 
@@ -149,8 +147,8 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         try {
             bookingRepository.save(bookingToConfirm);
 
-            // Update vehicle status to RENTED via ACL
-            externalListingsService.updateVehicleStatus(bookingToConfirm.getVehicleId(), "RENTED");
+            // Update vehicle status to rented via ACL (lowercase)
+            externalListingsService.updateVehicleStatus(bookingToConfirm.getVehicleId(), "rented");
 
             return Optional.of(bookingToConfirm);
         } catch (Exception e) {
@@ -239,5 +237,34 @@ public class BookingCommandServiceImpl implements BookingCommandService {
             System.err.println("Error canceling booking: " + e.getMessage());
             return Optional.empty();
         }
+    }
+
+    /**
+     * Handles the DeleteBookingCommand.
+     * Deletes a booking from the database.
+     */
+    @Override
+    public void handle(DeleteBookingCommand command) {
+        if (!bookingRepository.existsById(command.bookingId())) {
+            throw new IllegalArgumentException("Booking with ID " + command.bookingId() + " not found.");
+        }
+        bookingRepository.deleteById(command.bookingId());
+    }
+
+    /**
+     * Handles the UpdateBookingCommand.
+     * Updates endDate and totalPrice of the booking.
+     */
+    @Override
+    public Optional<Booking> handle(UpdateBookingCommand command) {
+        var bookingOpt = bookingRepository.findById(command.bookingId());
+        if (bookingOpt.isEmpty()) {
+            throw new IllegalArgumentException("Booking with ID " + command.bookingId() + " not found.");
+        }
+        var bookingToUpdate = bookingOpt.get();
+        bookingToUpdate.setEndDate(command.endDate());
+        bookingToUpdate.setTotalPrice(command.totalPrice());
+        bookingRepository.save(bookingToUpdate);
+        return Optional.of(bookingToUpdate);
     }
 }

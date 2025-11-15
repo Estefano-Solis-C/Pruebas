@@ -1,5 +1,4 @@
 package com.codexateam.platform.iam.interfaces.rest.resources;
-
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 /**

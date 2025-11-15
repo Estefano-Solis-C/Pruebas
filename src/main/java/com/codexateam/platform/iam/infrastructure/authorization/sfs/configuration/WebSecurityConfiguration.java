@@ -68,7 +68,6 @@ public class WebSecurityConfiguration {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Bridges Spring Security's PasswordEncoder with our HashingService port
         return new PasswordEncoder() {
             @Override
             public String encode(CharSequence rawPassword) {

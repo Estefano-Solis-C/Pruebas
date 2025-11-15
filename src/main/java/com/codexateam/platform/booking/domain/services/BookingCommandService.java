@@ -5,6 +5,8 @@ import com.codexateam.platform.booking.domain.model.commands.CancelBookingComman
 import com.codexateam.platform.booking.domain.model.commands.ConfirmBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.CreateBookingCommand;
 import com.codexateam.platform.booking.domain.model.commands.RejectBookingCommand;
+import com.codexateam.platform.booking.domain.model.commands.DeleteBookingCommand;
+import com.codexateam.platform.booking.domain.model.commands.UpdateBookingCommand;
 
 import java.util.Optional;
 
@@ -39,6 +41,17 @@ public interface BookingCommandService {
      * @return An Optional containing the canceled Booking aggregate.
      */
     Optional<Booking> handle(CancelBookingCommand command);
+
+    /**
+     * Handles the UpdateBookingCommand.
+     * @param command The command containing updated booking data (end date, total price).
+     * @return An Optional containing the updated Booking aggregate.
+     */
+    Optional<Booking> handle(UpdateBookingCommand command);
+
+    /**
+     * Handles the DeleteBookingCommand.
+     * @param command The command to delete a booking.
+     */
+    void handle(DeleteBookingCommand command);
 }
-
-

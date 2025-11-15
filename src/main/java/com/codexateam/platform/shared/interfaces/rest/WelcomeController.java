@@ -7,15 +7,22 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 /**
  * Welcome controller for the root endpoint.
  * Provides information about available API endpoints.
  */
+@Tag(name = "Welcome", description = "API Welcome Endpoint")
 @RestController
 @RequestMapping("/")
 public class WelcomeController {
 
     @GetMapping
+    @Operation(summary = "API Welcome Message", description = "Provides information and available endpoints of the API")
+    @ApiResponse(responseCode = "200", description = "Successful operation")
     public Map<String, Object> welcome() {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Welcome to CodexaTeam Backend API");
@@ -45,4 +52,3 @@ public class WelcomeController {
         return response;
     }
 }
-

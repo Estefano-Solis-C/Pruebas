@@ -5,6 +5,7 @@ import com.codexateam.platform.iam.domain.model.commands.SignInCommand;
 import com.codexateam.platform.iam.domain.model.commands.SignUpCommand;
 import com.codexateam.platform.iam.domain.model.commands.UpdatePasswordCommand;
 import com.codexateam.platform.iam.domain.model.commands.UpdateUserCommand;
+import com.codexateam.platform.iam.domain.model.commands.DeleteUserCommand;
 
 import java.util.Optional;
 
@@ -16,4 +17,5 @@ public interface UserCommandService {
     Optional<User> handle(SignInCommand command);
     Optional<User> handle(UpdateUserCommand command);
     Optional<User> handle(UpdatePasswordCommand command);
+    void handle(DeleteUserCommand command);
 }

@@ -1,6 +1,7 @@
 package com.codexateam.platform.listings.domain.model.aggregates;
 
 import com.codexateam.platform.listings.domain.model.commands.CreateVehicleCommand;
+import com.codexateam.platform.listings.domain.model.commands.UpdateVehicleCommand;
 import com.codexateam.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -61,5 +62,17 @@ public class Vehicle extends AuditableAbstractAggregateRoot<Vehicle> {
      */
     public void updateStatus(String newStatus) {
         this.status = newStatus;
+    }
+
+    /**
+     * Updates the vehicle's information with values from the UpdateVehicleCommand.
+     * @param command The command containing the updated vehicle data.
+     */
+    public void update(UpdateVehicleCommand command) {
+        this.brand = command.brand();
+        this.model = command.model();
+        this.year = command.year();
+        this.pricePerDay = command.pricePerDay();
+        this.imageUrl = command.imageUrl();
     }
 }

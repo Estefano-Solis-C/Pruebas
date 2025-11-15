@@ -13,6 +13,9 @@ import com.codexateam.platform.iam.interfaces.rest.transform.AuthenticatedUserRe
 import com.codexateam.platform.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
 import com.codexateam.platform.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
 import com.codexateam.platform.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +52,12 @@ public class AuthenticationController {
      * @param resource The sign-up data (name, email, password, role).
      * @return A ResponseEntity with the created UserResource or an error.
      */
+    @Operation(summary = "User Sign-Up", description = "Create a new user account")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "409", description = "Email already exists")
+    })
     @PostMapping("/sign-up")
     public ResponseEntity<UserResource> signUp(@RequestBody SignUpResource resource) {
         // Convert role string from db.json ('arrendador') to Enum ('ROLE_ARRENDADOR')
@@ -80,6 +89,11 @@ public class AuthenticationController {
      * @param resource The sign-in data (email, password).
      * @return A ResponseEntity with the AuthenticatedUserResource (including token) or an error.
      */
+    @Operation(summary = "User Sign-In", description = "Authenticate user and get JWT token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Authentication successful"),
+            @ApiResponse(responseCode = "401", description = "Invalid email or password")
+    })
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody SignInResource resource) {
         try {

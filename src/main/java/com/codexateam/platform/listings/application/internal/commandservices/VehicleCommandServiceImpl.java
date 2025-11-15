@@ -3,6 +3,7 @@ package com.codexateam.platform.listings.application.internal.commandservices;
 import com.codexateam.platform.listings.domain.model.aggregates.Vehicle;
 import com.codexateam.platform.listings.domain.model.commands.CreateVehicleCommand;
 import com.codexateam.platform.listings.domain.model.commands.UpdateVehicleStatusCommand;
+import com.codexateam.platform.listings.domain.model.commands.UpdateVehicleCommand;
 import com.codexateam.platform.listings.domain.services.VehicleCommandService;
 import com.codexateam.platform.listings.infrastructure.persistence.jpa.repositories.VehicleRepository;
 // TODO: Inject an IAM ACL (Anti-Corruption Layer) facade to validate ownerId
@@ -46,6 +47,14 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
         }
     }
 
+    /**
+     * Handles the UpdateVehicleStatusCommand.
+     * Updates the rental status of a vehicle (e.g., from "available" to "rented").
+     * Used by the Booking context via ACL when bookings are confirmed or completed.
+     *
+     * @param command The command containing vehicle ID and new status.
+     * @return An Optional containing the updated Vehicle, or empty if not found or update fails.
+     */
     @Override
     public Optional<Vehicle> handle(UpdateVehicleStatusCommand command) {
         try {
@@ -57,5 +66,26 @@ public class VehicleCommandServiceImpl implements VehicleCommandService {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Handles the UpdateVehicleCommand.
+     * Updates the vehicle's information (brand, model, year, pricePerDay, imageUrl).
+     * @param command The command containing the updated vehicle data.
+     * @return An Optional containing the updated Vehicle, or empty if not found.
+     */
+    @Override
+    public Optional<Vehicle> handle(UpdateVehicleCommand command) {
+        var vehicleOpt = vehicleRepository.findById(command.vehicleId());
+
+        if (vehicleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        var vehicleToUpdate = vehicleOpt.get();
+        vehicleToUpdate.update(command);
+        vehicleRepository.save(vehicleToUpdate);
+
+        return Optional.of(vehicleToUpdate);
     }
 }
